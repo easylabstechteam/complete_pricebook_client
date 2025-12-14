@@ -1,10 +1,10 @@
 import { client } from "@/client/http_client/backend_api";
 
-async function GetOverlSupplierPerfomance() {
+async function GetSupplierPerformance() {
   
     const response = await client.get("supplier_perfomance");
     return response.data;
 
 };
 
-export { GetOverlSupplierPerfomance };
+export { GetSupplierPerformance };

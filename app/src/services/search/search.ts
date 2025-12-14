@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { PostSearch } from "@/repositories/search/search";
-import { useGlobalState } from "@/store/store";
+import { useGlobalState } from "@/store/search_store";
 import type { SearchInput } from "@/types/search/searchType.input";
 
 /**

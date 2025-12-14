@@ -1,16 +1,19 @@
 import { useMutation } from "@tanstack/react-query";
-import { useGlobalState } from "@/store/store";
+import { useGlobalState } from "@/store/search_store";
 import { PostSelectedSearchResult } from "@/repositories/search/search.selected.result";
 import type { SearchModalInput } from "@/types/search/searchModal.input";
 
 /**
- * Custom hook to handle the selection of a search result item, 
+ * Custom hook to handle the selection of a search result item,
  * triggering the final data fetch (mutation), and updating the global state.
  */
 export function useSearchModalLogic() {
   // 1. Get State Setters UNCONDITIONALLY inside the hook
   const setTableResults = useGlobalState((state: any) => state.setTableResults);
-  const setInitialResults = useGlobalState((state: any) => state.setInitialResults);
+  const setInitialResults = useGlobalState(
+    (state: any) => state.setInitialResults
+  );
+  const initialResults = useGlobalState((state: any) => state.initialResults);
 
   // 2. API MUTATION HOOK (Final Data Fetch)
   const selectMutation = useMutation({
@@ -18,9 +21,9 @@ export function useSearchModalLogic() {
 
     onSuccess: (response: any) => {
       console.log({ message: "success", APIResponse: response });
-      
+
       // Cleanup: Remove the results that triggered the modal
-      setInitialResults(null); 
+      setInitialResults(null);
 
       // Set the final data for the table component
       setTableResults(response);
@@ -46,7 +49,11 @@ export function useSearchModalLogic() {
     // Trigger the mutation to fetch the final table data
     selectMutation.mutate(Data);
   };
-  
+
   // Return the handler function and the mutation status (for 'Loading...' text)
-  return { handleSelect: handleSelect, isPending: selectMutation.isPending };
+  return {
+    handleSelect: handleSelect,
+    isPending: selectMutation.isPending,
+    initialResults: initialResults,
+  };
 }
