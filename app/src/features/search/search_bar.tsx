@@ -26,7 +26,6 @@ function SearchBar() {
         {/* Search Icon / Spinner Container */}
         <div className="absolute left-3 text-gray-400">
           {/* Conditional Rendering: Check the 'loading' state to display either the spinner or the static Search icon. */}
-          // Static Search Icon from lucide-react when not loading.
           <Search size={20} />
         </div>
 
