@@ -7,7 +7,7 @@ import UploadPage from "@/pages/upload";
 function App() {
   return (
     <Routes>
-      <Route path="/search" element={<SearchPage />} />
+      <Route path="" element={<SearchPage />} />
       <Route path="/analytics" element={<AnalyticsPage />} />
       <Route path="/upload" element={<UploadPage />} />
       <Route path="*" element={<p> nah we don't do that here</p>} />
