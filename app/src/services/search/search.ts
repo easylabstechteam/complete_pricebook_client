@@ -44,7 +44,7 @@ function useSearchLogic() {
 
   // Handler for search trigger: runs the mutation
   function handleSearch() {
-    if (!isQueryEmpty && !Muation.isLoading) {
+    if (!isQueryEmpty) {
       Muation.mutate();
     }
   }
@@ -62,10 +62,9 @@ function useSearchLogic() {
 
     // Props for Button/UI logic
     handleSearch: handleSearch,
-    loading: Muation.isLoading,
     isQueryEmpty: isQueryEmpty,
   };
 }
 
 // Export the hook with an alias for cleaner import
-export { useSearchLogic as SearchLogic };
+export { useSearchLogic };

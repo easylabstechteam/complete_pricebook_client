@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Routes, Route } from "react-router-dom";
 import SearchPage from "@/pages/search";
 import AnalyticsPage from "@/pages/analytics";

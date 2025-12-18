@@ -3,8 +3,8 @@ import useSearchResultsLogic from "@/services/search/search_results_table";
 
 /**
  * SearchResultsTable
- * This presentation component consumes the final, selected data (tableResults) 
- * from the associated hook (useSearchResultsLogic) and renders it in a structured, 
+ * This presentation component consumes the final, selected data (tableResults)
+ * from the associated hook (useSearchResultsLogic) and renders it in a structured,
  * grouped, and fully responsive format (Table view for desktop, Card view for mobile).
  */
 function SearchResultsTable() {
@@ -19,7 +19,7 @@ function SearchResultsTable() {
   /**
    * Helper function for rendering a single key-value pair used in the mobile card view.
    */
-  const renderCardItem = (label, value, className = "") => (
+  const renderCardItem = (label: any, value: any, className = "") => (
     <div className={`flex justify-between py-1 ${className}`}>
       <span className="font-medium text-gray-500 mr-4">{label}:</span>
       <span className="text-right font-normal text-gray-900">{value}</span>
@@ -30,7 +30,6 @@ function SearchResultsTable() {
     // Main Container: Controls the card's overall style and ensures horizontal scrolling
     // is available for the table view on desktop if content is too wide.
     <div className="w-full h-full p-6 bg-white rounded-l shadow-2xl ring-1 ring-gray-300 overflow-x-auto">
-      
       {/* DESKTOP/TABLET VIEW (Standard Table) - Visible on screens >= md */}
       <table className="hidden md:table w-full border-collapse">
         <thead>
@@ -55,7 +54,7 @@ function SearchResultsTable() {
         </thead>
         <tbody>
           {/* Map over the main Trade Groups (Outer Loop) */}
-          {tableResults.map((data) => (
+          {tableResults.map((data: any) => (
             <React.Fragment key={data.trade_code}>
               {/* Parent Row: Trade Group Header - Provides visual grouping and context. */}
               <tr className="bg-gray-50/80 border-b border-gray-200 transition-colors hover:bg-gray-100">
@@ -72,7 +71,7 @@ function SearchResultsTable() {
                 <td colSpan={4}></td>
               </tr>
               {/* Nested Rows: Individual Products (Inner Loop) */}
-              {data.json_agg.map((p) => (
+              {data.json_agg.map((p: any) => (
                 <tr
                   key={p.product_id}
                   className="text-sm border-b border-gray-100 cursor-pointer transition-all duration-150 ease-in-out 
@@ -103,8 +102,11 @@ function SearchResultsTable() {
       {/* Mobile View (Card Layout) - Visible on screens < md */}
       <div className="md:hidden space-y-4">
         {/* Map over the main Trade Groups (Outer Loop) */}
-        {tableResults.map((data) => (
-          <div key={data.trade_code} className="border border-gray-200 rounded-l shadow-sm">
+        {tableResults.map((data: any) => (
+          <div
+            key={data.trade_code}
+            className="border border-gray-200 rounded-l shadow-sm"
+          >
             {/* Trade Group Header (The "Card Group" Title) */}
             <div className="bg-gray-50 p-3 border-b border-gray-200 rounded-t-l">
               <span className="font-bold text-base text-gray-900">
@@ -117,7 +119,7 @@ function SearchResultsTable() {
 
             {/* Individual Product Cards (Inner Loop) */}
             <div className="divide-y divide-gray-100">
-              {data.json_agg.map((p, index) => (
+              {data.json_agg.map((p: any) => (
                 <div
                   key={p.product_id}
                   className={`p-3 space-y-1 cursor-pointer transition-all duration-150 ease-in-out 
@@ -127,7 +129,11 @@ function SearchResultsTable() {
                   {renderCardItem("Product Name", p.product_name)}
                   {renderCardItem("Product Code", p.product_code)}
                   {/* Applies specific styling to the price item */}
-                  {renderCardItem("Price", `$${p.product_price.toFixed(2)}`, "font-bold text-blue-600")}
+                  {renderCardItem(
+                    "Price",
+                    `$${p.product_price.toFixed(2)}`,
+                    "font-bold text-blue-600"
+                  )}
                   {renderCardItem("Supplier", p.supplier_name, "text-gray-600")}
                 </div>
               ))}
