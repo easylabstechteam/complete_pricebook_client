@@ -10,7 +10,6 @@ function App() {
       <Route path="" element={<SearchPage />} />
       <Route path="/analytics" element={<AnalyticsPage />} />
       <Route path="/upload" element={<UploadPage />} />
-      <Route path="*" element={<p> nah we don't do that here</p>} />
     </Routes>
   );
 }
