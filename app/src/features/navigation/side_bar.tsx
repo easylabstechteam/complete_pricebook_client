@@ -12,7 +12,7 @@ function Sidebar() {
 
   // Configuration array for all navigation items.
   const navItems = [
-    { name: 'Catalogue', href: '/search', icon: DollarSign },
+    { name: 'Catalogue', href: '', icon: DollarSign },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Uploads', href: '/upload', icon: Upload },
   ];
