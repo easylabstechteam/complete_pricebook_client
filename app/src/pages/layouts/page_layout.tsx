@@ -7,7 +7,7 @@ function PageLayout({
 }) {
   return (
     <div className="relative h-full w-full flex justify-center items-start p-10 overflow-y-auto">
-      <div className="w-full max-w-5xl">{children}</div>
+      <div className="w-full h-full">{children}</div>
     </div>
   );
 }; 

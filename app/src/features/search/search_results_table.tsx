@@ -1,145 +1,67 @@
-import React from "react";
+import React, { useMemo } from "react";
 import useSearchResultsLogic from "@/services/search/search_results_table";
 
-/**
- * SearchResultsTable
- * This presentation component consumes the final, selected data (tableResults)
- * from the associated hook (useSearchResultsLogic) and renders it in a structured,
- * grouped, and fully responsive format (Table view for desktop, Card view for mobile).
- */
 function SearchResultsTable() {
-  // Hook Integration: Destructures the final, processed data from the logic layer.
   const { tableResults } = useSearchResultsLogic();
 
-  // Guard Clause: If data is null, undefined, or an empty array, render nothing.
-  if (!tableResults || tableResults == null || tableResults.length === 0) {
-    return null;
-  }
+  const minPrice = useMemo(() => {
+    if (!tableResults) return null;
+    const allPrices = tableResults.flatMap((group: any) => 
+      group.json_agg.map((p: any) => p.product_price)
+    );
+    return allPrices.length > 0 ? Math.min(...allPrices) : null;
+  }, [tableResults]);
 
-  /**
-   * Helper function for rendering a single key-value pair used in the mobile card view.
-   */
-  const renderCardItem = (label: any, value: any, className = "") => (
-    <div className={`flex justify-between py-1 ${className}`}>
-      <span className="font-medium text-gray-500 mr-4">{label}:</span>
-      <span className="text-right font-normal text-gray-900">{value}</span>
-    </div>
-  );
+  if (!tableResults || tableResults.length === 0) return null;
 
   return (
-    // Main Container: Controls the card's overall style and ensures horizontal scrolling
-    // is available for the table view on desktop if content is too wide.
-    <div className="w-full h-full p-6 bg-white rounded-l shadow-2xl ring-1 ring-gray-300 overflow-x-auto">
-      {/* DESKTOP/TABLET VIEW (Standard Table) - Visible on screens >= md */}
-      <table className="hidden md:table w-full border-collapse">
-        <thead>
-          {/* Table Header: Sticky to remain visible when scrolling down the results list. */}
-          <tr className="bg-gray-100 text-gray-800 border-b border-gray-300 sticky top-0 z-10 transition-colors">
-            <th className="font-semibold text-xs uppercase tracking-wider text-left px-4 py-3">
-              Trade Info
-            </th>
-            <th className="font-semibold text-xs uppercase tracking-wider text-left px-4 py-3">
-              Product Code
-            </th>
-            <th className="font-semibold text-xs uppercase tracking-wider text-left px-4 py-3">
-              Product Name
-            </th>
-            <th className="font-semibold text-xs uppercase tracking-wider text-left px-4 py-3">
-              Price
-            </th>
-            <th className="font-semibold text-xs uppercase tracking-wider text-left px-4 py-3">
-              Supplier
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {/* Map over the main Trade Groups (Outer Loop) */}
-          {tableResults.map((data: any) => (
-            <React.Fragment key={data.trade_code}>
-              {/* Parent Row: Trade Group Header - Provides visual grouping and context. */}
-              <tr className="bg-gray-50/80 border-b border-gray-200 transition-colors hover:bg-gray-100">
-                <td className="py-3 px-4">
-                  <div className="flex space-x-2 items-center">
-                    <span className="font-bold text-sm text-gray-900">
-                      {data.trade_name}
-                    </span>
-                    <span className="text-zinc-500 text-xs font-mono">
-                      {data.trade_code}
-                    </span>
-                  </div>
-                </td>
-                <td colSpan={4}></td>
-              </tr>
-              {/* Nested Rows: Individual Products (Inner Loop) */}
-              {data.json_agg.map((p: any) => (
-                <tr
-                  key={p.product_id}
-                  className="text-sm border-b border-gray-100 cursor-pointer transition-all duration-150 ease-in-out 
-                             hover:bg-gray-900 hover:text-white"
-                >
-                  {/* Empty cell to align products under the main trade group column */}
-                  <td className="px-4"></td>
-                  <td className="px-4 py-2 group-hover:text-gray-200">
-                    {p.product_code}
-                  </td>
-                  <td className="px-4 py-2 truncate group-hover:text-gray-200">
-                    {p.product_name}
-                  </td>
-                  {/* Currency Formatting: Ensures price is displayed with two decimal places. */}
-                  <td className="px-4 py-2 group-hover:text-gray-200 font-semibold">
-                    ${p.product_price.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-2 group-hover:text-gray-400 text-gray-600">
-                    {p.supplier_name}
+    /* h-full and flex-col allow the table header to be sticky while the body scrolls */
+    <div className="w-full h-full flex flex-col bg-white">
+      <div className="h-full w-full overflow-auto">
+        <table className="hidden md:table h-full w-full border-separate border-spacing-0">
+          <thead className="sticky top-0 z-20 bg-slate-50">
+            <tr className=" border-b border-slate-200">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">Trade / Product</th>
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">Code</th>
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">Price</th>
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">Supplier</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {tableResults.map((data: any) => (
+              <React.Fragment key={data.trade_code}>
+                {/* Trade Group Header */}
+                <tr className="bg-slate-50/50">
+                  <td colSpan={4} className="px-2 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-900">{data.trade_name}</span>
+                      <span className="text-xs font-mono text-slate-400 bg-slate-200/50 px-1.5 py-0.5 rounded">{data.trade_code}</span>
+                    </div>
                   </td>
                 </tr>
-              ))}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Mobile View (Card Layout) - Visible on screens < md */}
-      <div className="md:hidden space-y-4">
-        {/* Map over the main Trade Groups (Outer Loop) */}
-        {tableResults.map((data: any) => (
-          <div
-            key={data.trade_code}
-            className="border border-gray-200 rounded-l shadow-sm"
-          >
-            {/* Trade Group Header (The "Card Group" Title) */}
-            <div className="bg-gray-50 p-3 border-b border-gray-200 rounded-t-l">
-              <span className="font-bold text-base text-gray-900">
-                {data.trade_name}
-              </span>
-              <span className="text-zinc-500 text-sm font-mono ml-2">
-                {data.trade_code}
-              </span>
-            </div>
-
-            {/* Individual Product Cards (Inner Loop) */}
-            <div className="divide-y divide-gray-100">
-              {data.json_agg.map((p: any) => (
-                <div
-                  key={p.product_id}
-                  className={`p-3 space-y-1 cursor-pointer transition-all duration-150 ease-in-out 
-                              hover:bg-gray-100`}
-                >
-                  {/* Product Details - Uses the helper function for clean key/value display */}
-                  {renderCardItem("Product Name", p.product_name)}
-                  {renderCardItem("Product Code", p.product_code)}
-                  {/* Applies specific styling to the price item */}
-                  {renderCardItem(
-                    "Price",
-                    `$${p.product_price.toFixed(2)}`,
-                    "font-bold text-blue-600"
-                  )}
-                  {renderCardItem("Supplier", p.supplier_name, "text-gray-600")}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+                {/* Product Rows */}
+                {data.json_agg.map((p: any) => {
+                  const isCheapest = p.product_price === minPrice;
+                  return (
+                    <tr key={p.product_id} className={`group hover:bg-slate-900 transition-colors ${isCheapest ? "bg-emerald-50/40" : ""}`}>
+                      <td className="px-6 py-4 text-sm text-slate-700 group-hover:text-white pl-12">{p.product_name}</td>
+                      <td className="px-6 py-4 text-sm font-mono text-slate-400 group-hover:text-slate-300">{p.product_code}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className={`text-sm font-bold ${isCheapest ? "text-emerald-600 group-hover:text-emerald-400" : "text-slate-900 group-hover:text-white"}`}>
+                            ${p.product_price.toFixed(2)}
+                          </span>
+                          {isCheapest && <span className="text-[10px] font-black text-emerald-600 uppercase group-hover:text-emerald-400">Cheapest</span>}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-500 group-hover:text-slate-300">{p.supplier_name}</td>
+                    </tr>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
