@@ -10,25 +10,24 @@ function SearchPage() {
   return (
     <AppShell>
       <div className="relative h-full w-full flex flex-col overflow-hidden bg-white">
+        
         {/* 1. TOP AREA: Title Block */}
         <div
           className={`
-      z-20 transition-all duration-500 ease-in-out
-      ${
-        stage === "results"
-          ? "pt-10 pb-4"
-          : stage === "searching"
-          ? "absolute inset-x-0 top-[10vh] flex flex-col items-center pointer-events-none"
-          : "absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-40"
-      }
-    `}
+            z-0 transition-all duration-500 ease-in-out px-6
+            ${
+              stage === "results"
+                ? "pt-6 md:pt-10 pb-4"
+                : "absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-48 md:pb-64"
+            }
+          `}
         >
-          <div className="text-center px-6">
-            <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight">
+          <div className="text-center">
+            <h1 className="text-3xl md:text-5xl font-black text-black tracking-tighter uppercase leading-none">
               Complete Price Book
             </h1>
-            <p className="text-slate-500 text-lg mt-2">
-              Search trade rates and supplier inventory.
+            <p className="text-slate-500 text-xs md:text-lg mt-2 font-bold uppercase tracking-[0.2em]">
+              Search trade rates and inventory
             </p>
           </div>
         </div>
@@ -36,34 +35,34 @@ function SearchPage() {
         {/* 2. CENTER AREA: Table */}
         <div className="flex-1 w-full min-h-0 relative">
           {stage === "results" && (
-            <div className="absolute inset-0 w-full mx-auto h-full animate-in fade-in duration-500">
+            <div className="absolute inset-0 w-full h-full animate-in fade-in duration-500">
               <SearchResultsTable />
             </div>
           )}
         </div>
 
-        {/* 3. BOTTOM AREA: Search Bar Unit */}
+        {/* 3. SEARCH BAR UNIT - Z-INDEX LOWERED TO z-10 */}
         <div
           className={`
-        z-50 transition-all duration-500 ease-in-out
-        ${
-          stage === "results"
-            ? "py-6 bg-white"
-            : stage === "searching"
-            ? "absolute inset-x-0 top-[25vh] flex flex-col items-center pointer-events-none"
-            : "absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-40"
-        }
-      `}
+            z-10 transition-all duration-500 ease-in-out px-4
+            ${
+              stage === "results"
+                ? "py-4 md:py-6 bg-white border-t-2 border-black"
+                : "absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-24 md:pt-32"
+            }
+          `}
         >
           <div
             className={`
-          bg-white w-1/3 mx-auto transition-all duration-500 ease-in-out overflow-hidden pointer-events-auto
-          ${
-            stage === "results"
-              ? "rounded-xl border border-slate-200"
-              : "rounded-2xl border border-slate-200"
-          }
-        `}
+              bg-white transition-all duration-500 ease-in-out overflow-hidden pointer-events-auto
+              /* Responsive Width: Full on mobile, half/third on desktop */
+              w-full md:w-2/3 lg:w-1/2 mx-auto
+              ${
+                stage === "results"
+                  ? "rounded-none md:rounded-xl border-t md:border-2 border-black shadow-none md:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  : "rounded-2xl border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+              }
+            `}
           >
             <SearchBar
               stage={stage}
@@ -72,7 +71,7 @@ function SearchPage() {
             />
 
             {stage === "searching" && (
-              <div className="h-[45vh] border-t border-slate-100 overflow-y-auto">
+              <div className="h-[40vh] md:h-[45vh] border-t-2 border-black overflow-y-auto bg-white">
                 <SearchResultsModal onSelect={() => setStage("results")} />
               </div>
             )}
