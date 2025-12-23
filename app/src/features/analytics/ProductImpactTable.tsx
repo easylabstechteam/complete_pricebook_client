@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 // 1. IMPORT ColDef
-import { ColDef } from "ag-grid-community"; 
+import type { ColDef } from "ag-grid-community"; 
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAnalyticsLogic } from "@/services/analytics/useAnalyticsLogic";
 
