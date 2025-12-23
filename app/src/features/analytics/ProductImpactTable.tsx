@@ -45,8 +45,8 @@ function DynamicProductImpactTable() {
         rowGroup: isTrade, // Automatically groups by trade if the column exists
         hide: isTrade,     // Hides the flat column to use the Group Row instead
         cellClass: isPrice || isVariance ? "font-mono tabular-nums" : "font-medium uppercase text-[11px]",
-        valueFormatter: isPrice ? (p: any) => `$${parseFloat(p.value).toFixed(2)}` : null,
-        cellRenderer: isVariance ? DynamicImpactBadge : null,
+        valueFormatter: isPrice ? (p: any) => `$${parseFloat(p.value).toFixed(2)}` : undefined,
+        cellRenderer: isVariance ? DynamicImpactBadge : undefined,
       };
     });
   }, [productImpact]);
