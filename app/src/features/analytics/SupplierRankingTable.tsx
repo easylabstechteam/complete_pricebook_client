@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import {
   Card,

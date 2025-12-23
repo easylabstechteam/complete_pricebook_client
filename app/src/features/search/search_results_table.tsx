@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import useSearchResultsLogic from "@/services/search/useSearchResultsLogic";
 
@@ -40,7 +40,7 @@ function SearchResultsTable() {
     );
 
     const minPrice = Math.min(...allProducts.map((p: any) => p.product_price || p.price || 0));
-    const formattedRows = allProducts.map(p => ({
+    const formattedRows = allProducts.map((p:any )=> ({
       ...p,
       is_cheapest_global: (p.product_price || p.price) === minPrice
     }));

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAnalyticsLogic } from "@/services/analytics/useAnalyticsLogic";
