@@ -93,7 +93,7 @@ function SearchResultsModal({ onSelect }: Props) {
                   </span>
                   {/* Added a metadata line for a more professional feel */}
                   <span className="text-[10px] text-slate-400 truncate">
-                    ID: {value?.data.trade_code || 'N/A'} • Registry Entry
+                    ID: {value?.data.name || 'N/A'} • Registry Entry
                   </span>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, DollarSign, BarChart3, Upload, X, ChevronLeft, ChevronRight } from 'lucide-react'; 
+import { Menu, DollarSign, BarChart3, Upload, ChevronLeft, ChevronRight } from 'lucide-react'; 
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 
