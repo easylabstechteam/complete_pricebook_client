@@ -1,5 +1,7 @@
-import { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
+// 1. Import the ColDef type
+import type { ColDef } from "ag-grid-community"; 
 import {
   Card,
   CardHeader,
@@ -17,70 +19,42 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-// Styles
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 
-// 1. Monochrome Renderer for Variance
+// Renderer remains the same
 const RankingVarianceBadge = (params: any) => {
   const val = parseFloat(params.value);
   const isMvp = val === 0;
-
   return (
     <div className="flex items-center gap-2 h-full font-mono">
-      <div
-        className={`
-        flex items-center px-2 py-0.5 border text-[10px] font-bold tracking-tighter
-        ${
-          isMvp
-            ? "bg-black text-white border-black"
-            : "bg-white text-black border-black"
-        }
-        group-hover:border-white group-hover:bg-white group-hover:text-black transition-colors
-      `}
-      >
+      <div className={`flex items-center px-2 py-0.5 border text-[10px] font-bold tracking-tighter ${isMvp ? "bg-black text-white border-black" : "bg-white text-black border-black"} group-hover:border-white group-hover:bg-white group-hover:text-black transition-colors`}>
         {isMvp ? "🏆 MARKET LEADER" : `+${val.toFixed(2)}%`}
       </div>
     </div>
   );
 };
 
-// 2. Custom Cell Renderer for the Actions Menu
+// Actions remains the same
 const RowActions = (params: any) => {
   const { onFetchImpact } = params.context;
   const rowData = params.data;
-
   return (
     <div className="flex items-center justify-center h-full">
       <DropdownMenu>
         <DropdownMenuTrigger className="p-1 hover:bg-gray-100 rounded transition-colors group-hover:hover:bg-white/20 outline-none">
           <MoreVertical className="w-4 h-4 text-black group-hover:text-white" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="w-64 font-mono border-2 border-black rounded-none bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-        >
-          <DropdownMenuItem
-            className="text-[11px] font-bold uppercase cursor-pointer py-3 focus:bg-black focus:text-white"
-            onClick={() => console.log("Supplier Info:", rowData)}
-          >
-            <Info className="mr-2 h-4 w-4" />
-            Supplier Profile
+        <DropdownMenuContent align="end" className="w-64 font-mono border-2 border-black rounded-none bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <DropdownMenuItem className="text-[11px] font-bold uppercase cursor-pointer py-3 focus:bg-black focus:text-white" onClick={() => console.log("Supplier Info:", rowData)}>
+            <Info className="mr-2 h-4 w-4" /> Supplier Profile
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-black h-[1px]" />
-          <DropdownMenuItem
-            className="text-[11px] font-bold uppercase cursor-pointer py-3 focus:bg-black focus:text-white"
-            onClick={() => {
+          <DropdownMenuItem className="text-[11px] font-bold uppercase cursor-pointer py-3 focus:bg-black focus:text-white" onClick={() => {
               onFetchImpact.mutate({ Filter: rowData.trade_code });
-              
-              const targetElement = document.getElementById("product_impact_table");
-              if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            }}
-          >
-            <PackageSearch className="mr-2 h-4 w-4" />
-            high performing products prices
+              document.getElementById("product_impact_table")?.scrollIntoView({ behavior: 'smooth' });
+          }}>
+            <PackageSearch className="mr-2 h-4 w-4" /> High performing products prices
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -89,37 +63,31 @@ const RowActions = (params: any) => {
 };
 
 function SupplierRankingTable() {
-  const { supplierRankings, getSupplierRankings, getProductImpact, isLoading } =
-    useAnalyticsLogic();
+  const { supplierRankings, getSupplierRankings, getProductImpact, isLoading } = useAnalyticsLogic();
 
   useEffect(() => {
     getSupplierRankings.mutate();
   }, []);
 
-  const gridContext = useMemo(
-    () => ({
-      onFetchImpact: getProductImpact,
-    }),
-    [getProductImpact]
-  );
+  const gridContext = useMemo(() => ({ onFetchImpact: getProductImpact }), [getProductImpact]);
 
-  const colDefs = useMemo(() => {
+  // 2. Explicitly type the useMemo return as ColDef[]
+  const colDefs = useMemo<ColDef[]>(() => {
     if (!supplierRankings || supplierRankings.length === 0) return [];
 
-    const baseCols = Object.keys(supplierRankings[0]).map((key) => {
+    const baseCols: ColDef[] = Object.keys(supplierRankings[0]).map((key) => {
       const isName = key.toLowerCase().includes("name");
       const isPrice = key.toLowerCase().includes("price") || key.toLowerCase().includes("avg");
       const isVariance = key.toLowerCase().includes("away") || key.toLowerCase().includes("percentage");
 
+      // 3. Construct the object and use undefined instead of null
       return {
         field: key,
         headerName: key.replace(/_/g, " ").toUpperCase(),
         flex: isName ? 2 : 1,
-        cellClass: `group ${
-          isName ? "font-bold uppercase text-[11px]" : "font-mono tabular-nums text-[11px]"
-        }`,
-        valueFormatter: isPrice ? (p: any) => `$${parseFloat(p.value).toFixed(2)}` : null,
-        cellRenderer: isVariance ? RankingVarianceBadge : null,
+        cellClass: `group ${isName ? "font-bold uppercase text-[11px]" : "font-mono tabular-nums text-[11px]"}`,
+        valueFormatter: isPrice ? (p: any) => `$${parseFloat(p.value).toFixed(2)}` : undefined,
+        cellRenderer: isVariance ? RankingVarianceBadge : undefined,
       };
     });
 
@@ -129,7 +97,7 @@ function SupplierRankingTable() {
         headerName: "ACTIONS",
         field: "actions",
         width: 100,
-        pinned: "right" as const,
+        pinned: "right",
         resizable: false,
         sortable: false,
         filter: false,
@@ -151,13 +119,9 @@ function SupplierRankingTable() {
               Rankings based on Trade Code Benchmarks
             </CardDescription>
           </div>
-          <div className="text-right">
-            <span className="text-[10px] font-bold block uppercase tracking-widest opacity-40">
-              Records Found
-            </span>
-            <span className="text-2xl font-black tabular-nums">
-              {isLoading ? "--" : supplierRankings?.length}
-            </span>
+          <div className="text-right text-black">
+            <span className="text-[10px] font-bold block uppercase tracking-widest opacity-40">Records Found</span>
+            <span className="text-2xl font-black tabular-nums">{isLoading ? "--" : supplierRankings?.length}</span>
           </div>
         </div>
       </CardHeader>
@@ -175,8 +139,7 @@ function SupplierRankingTable() {
               resizable: true,
               sortable: true,
               filter: true,
-              headerClass:
-                "bg-white text-black font-black text-[10px] tracking-widest border-b border-black",
+              headerClass: "bg-white text-black font-black text-[10px] tracking-widest border-b border-black",
             }}
             headerHeight={45}
             rowHeight={52}
@@ -184,19 +147,9 @@ function SupplierRankingTable() {
         </div>
       </div>
 
-      {/* Scoped Brutalist Hover Styling */}
       <style>{`
-        .brutalist-grid .ag-row-hover {
-          background-color: #000 !important;
-          color: #fff !important;
-        }
-        .brutalist-grid .ag-row-hover .ag-cell {
-          color: #fff !important;
-        }
-        .brutalist-grid .ag-row-hover .text-black, 
-        .brutalist-grid .ag-row-hover .text-slate-500 {
-          color: #fff !important;
-        }
+        .brutalist-grid .ag-row-hover { background-color: #000 !important; color: #fff !important; }
+        .brutalist-grid .ag-row-hover .ag-cell { color: #fff !important; }
       `}</style>
     </Card>
   );
