@@ -1,9 +1,15 @@
 // TODO :: This page will host analytics features/components.
-import OverallRankingsTable from '@/features/analytics/supplier_ranking'
-
+import ProductImpactTable from "@/features/analytics/ProductImpactTable";
+import SupplierRankingTable from "@/features/analytics/SupplierRankingTable";
 import AppShell from "@/pages/layouts/app_shell";
+
 function AnalyticsPage() {
-  return <AppShell><OverallRankingsTable/></AppShell>;
-}; 
+  return (
+    <AppShell>
+      <SupplierRankingTable />
+      <ProductImpactTable />
+    </AppShell>
+  );
+}
 
 export default AnalyticsPage;

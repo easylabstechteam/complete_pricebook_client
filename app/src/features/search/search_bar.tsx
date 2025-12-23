@@ -1,8 +1,7 @@
 import { Search } from "lucide-react";
 import { useEffect } from "react";
-import { useSearchLogic } from "@/services/search/search";
+import { useSearchLogic } from "@/services/search/useSearchLogic";
 
-// We add these props so the Page and Bar can stay in sync
 interface SearchBarProps {
   stage: 'idle' | 'searching' | 'results';
   onTypingStop: () => void;
@@ -12,18 +11,16 @@ interface SearchBarProps {
 function SearchBar({ stage, onTypingStop, onClear }: SearchBarProps) {
   const { value, onChange, onKeyDown, handleSearch, isQueryEmpty } = useSearchLogic();
 
-  // This is the 0.5s logic YOU requested
   useEffect(() => {
     if (value.trim() === "") {
-      onClear(); // Reset to center if input is empty
+      onClear();
       return;
     }
 
     const timer = setTimeout(() => {
-      // If they stop for 0.5s and we aren't already at the bottom, Expand!
       if (value.trim().length > 1 && stage === 'idle') {
-        handleSearch(); // Runs your Mutation
-        onTypingStop(); // Makes the bar grow
+        handleSearch();
+        onTypingStop();
       }
     }, 500);
 
@@ -31,10 +28,13 @@ function SearchBar({ stage, onTypingStop, onClear }: SearchBarProps) {
   }, [value, stage]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-2 sm:p-4">
-      <div className="relative w-full flex items-center bg-white rounded-l transition-all duration-200 focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-gray-900">
-        <div className="absolute left-3 text-gray-400">
-          <Search size={20} />
+    <div className="w-full max-w-3xl mx-auto p-4">
+      {/* Container with a thick offset shadow for that brutalist 'pop' */}
+      <div className="relative flex items-center bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all focus-within:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] focus-within:-translate-y-0.5">
+        
+        {/* Left Icon Section */}
+        <div className="pl-4 pr-2 text-black border-r-2 border-transparent">
+          <Search size={22} strokeWidth={3} />
         </div>
 
         <input
@@ -42,23 +42,34 @@ function SearchBar({ stage, onTypingStop, onClear }: SearchBarProps) {
           value={value}
           onChange={onChange}
           onKeyDown={onKeyDown}
-          placeholder="Search trade, suppliers or products..."
-          className="w-full py-4 pl-12 pr-[4.5rem] text-gray-800 bg-transparent rounded-xl focus:outline-none placeholder-gray-500 text-base sm:text-lg"
+          placeholder="ENTER TRADE_CODE, SUPPLIER OR PRODUCT CODE...etc"
+          className="w-full py-5 px-3 text-black bg-transparent focus:outline-none placeholder:text-gray-400 font-mono text-sm sm:text-base uppercase font-bold tracking-tight"
         />
 
-        <button
-          onClick={() => { handleSearch(); onTypingStop(); }}
-          disabled={isQueryEmpty}
-          className={`absolute right-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors duration-150 whitespace-nowrap ${
-            isQueryEmpty ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-black shadow-md"
-          }`}
-        >
-          Search
-        </button>
+        {/* Action Button: Inverted Monochrome */}
+        <div className="pr-2">
+          <button
+            onClick={() => { handleSearch(); onTypingStop(); }}
+            disabled={isQueryEmpty}
+            className={`
+              px-6 py-2 border-2 border-black font-black uppercase text-xs tracking-widest transition-all
+              ${isQueryEmpty 
+                ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed" 
+                : "bg-black text-white hover:bg-white hover:text-black active:translate-y-1 active:shadow-none"
+              }
+            `}
+          >
+            Search
+          </button>
+        </div>
+
+        {/* Status Indicator (Optional Detail) */}
+        <div className="absolute -top-3 left-4 bg-black text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-tighter">
+          user input
+        </div>
       </div>
     </div>
   );
 }
 
 export default SearchBar;
-

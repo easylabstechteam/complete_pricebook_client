@@ -1,68 +1,130 @@
 import React, { useMemo } from "react";
-import useSearchResultsLogic from "@/services/search/search_results_table";
+import { AgGridReact } from "ag-grid-react";
+import useSearchResultsLogic from "@/services/search/useSearchResultsLogic";
+
+// Styles
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
+
+const DynamicPriceBadge = (params: any) => {
+  const isCheapest = params.data?.is_cheapest_global;
+  const value = parseFloat(params.value);
+  if (isNaN(value)) return <span>{params.value}</span>;
+  
+  return (
+    <div className="flex items-center gap-2 h-full font-mono">
+      <span className={`text-[11px] font-bold ${isCheapest ? "text-black" : "text-slate-500"}`}>
+        ${value.toFixed(2)}
+      </span>
+      {isCheapest && (
+        <div className="bg-black text-white border border-black px-1.5 py-0.5 text-[9px] font-black tracking-tighter uppercase">
+          Best Price
+        </div>
+      )}
+    </div>
+  );
+};
 
 function SearchResultsTable() {
   const { tableResults } = useSearchResultsLogic();
 
-  const minPrice = useMemo(() => {
-    if (!tableResults) return null;
-    const allPrices = tableResults.flatMap((group: any) => 
-      group.json_agg.map((p: any) => p.product_price)
+  const { rowData, dynamicKeys } = useMemo(() => {
+    if (!tableResults || tableResults.length === 0) return { rowData: [], dynamicKeys: [] };
+
+    const allProducts = tableResults.flatMap((group: any) => 
+      group.json_agg.map((p: any) => ({
+        ...p,
+        trade_name: group.trade_name,
+        trade_code: group.trade_code,
+      }))
     );
-    return allPrices.length > 0 ? Math.min(...allPrices) : null;
+
+    const minPrice = Math.min(...allProducts.map((p: any) => p.product_price || p.price || 0));
+    const formattedRows = allProducts.map(p => ({
+      ...p,
+      is_cheapest_global: (p.product_price || p.price) === minPrice
+    }));
+
+    const keys = Object.keys(allProducts[0]);
+    return { rowData: formattedRows, dynamicKeys: keys };
   }, [tableResults]);
 
-  if (!tableResults || tableResults.length === 0) return null;
+  const colDefs = useMemo(() => {
+    return dynamicKeys.map((key) => {
+      const isTrade = key.includes("trade_name");
+      const isPrice = key.toLowerCase().includes("price");
+      const isCode = key.toLowerCase().includes("code");
+
+      return {
+        field: key,
+        headerName: key.replace(/_/g, " ").toUpperCase(),
+        flex: isTrade || key.includes("name") ? 2 : 1,
+        rowGroup: isTrade, 
+        hide: isTrade,
+        cellRenderer: isPrice ? DynamicPriceBadge : null,
+        cellClass: isCode || isPrice 
+          ? "font-mono tabular-nums text-[10px]" 
+          : "font-bold text-black uppercase text-[11px]",
+      };
+    });
+  }, [dynamicKeys]);
 
   return (
-    /* h-full and flex-col allow the table header to be sticky while the body scrolls */
-    <div className="w-full h-full flex flex-col bg-white">
-      <div className="h-full w-full overflow-auto">
-        <table className="hidden md:table h-full w-full border-separate border-spacing-0">
-          <thead className="sticky top-0 z-20 bg-slate-50">
-            <tr className=" border-b border-slate-200">
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">Trade / Product</th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">Code</th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">Price</th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">Supplier</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {tableResults.map((data: any) => (
-              <React.Fragment key={data.trade_code}>
-                {/* Trade Group Header */}
-                <tr className="bg-slate-50/50">
-                  <td colSpan={4} className="px-2 py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900">{data.trade_name}</span>
-                      <span className="text-xs font-mono text-slate-400 bg-slate-200/50 px-1.5 py-0.5 rounded">{data.trade_code}</span>
-                    </div>
-                  </td>
-                </tr>
-                {/* Product Rows */}
-                {data.json_agg.map((p: any) => {
-                  const isCheapest = p.product_price === minPrice;
-                  return (
-                    <tr key={p.product_id} className={`group hover:bg-slate-900 transition-colors ${isCheapest ? "bg-emerald-50/40" : ""}`}>
-                      <td className="px-6 py-4 text-sm text-slate-700 group-hover:text-white pl-12">{p.product_name}</td>
-                      <td className="px-6 py-4 text-sm font-mono text-slate-400 group-hover:text-slate-300">{p.product_code}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className={`text-sm font-bold ${isCheapest ? "text-emerald-600 group-hover:text-emerald-400" : "text-slate-900 group-hover:text-white"}`}>
-                            ${p.product_price.toFixed(2)}
-                          </span>
-                          {isCheapest && <span className="text-[10px] font-black text-emerald-600 uppercase group-hover:text-emerald-400">Cheapest</span>}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-500 group-hover:text-slate-300">{p.supplier_name}</td>
-                    </tr>
-                  );
-                })}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+    <div className="w-full h-[90vh] flex flex-col bg-white border-t-2 border-black">
+      {/* Header */}
+      <div className="px-6 py-4 border-b-2 border-black flex justify-between items-end bg-white">
+        <div>
+          <h2 className="text-3xl font-black uppercase tracking-tighter text-black">Search Index</h2>
+          <p className="text-[10px] font-bold uppercase opacity-50 tracking-[0.2em] text-black">Market Extraction // Dynamic Columns</p>
+        </div>
+        <div className="text-right">
+          <span className="text-[10px] block font-black opacity-40 uppercase text-black">Total Records</span>
+          <span className="text-2xl font-black text-black">{rowData.length}</span>
+        </div>
       </div>
+
+      <div className="flex-grow overflow-hidden">
+        <div className="ag-theme-quartz h-full w-full ag-theme-custom-bw">
+          <AgGridReact 
+            rowData={rowData} 
+            columnDefs={colDefs}
+            groupDisplayType="groupRows"
+            animateRows={true}
+            // --- Pagination Settings ---
+            pagination={true}
+            paginationPageSize={20}
+            paginationPageSizeSelector={[10, 20, 50, 100]}
+            // ---------------------------
+            defaultColDef={{
+              sortable: true,
+              filter: true,
+              resizable: true,
+              headerClass: "bg-white text-black font-black text-[10px] tracking-widest border-b border-black"
+            }}
+            headerHeight={48}
+            rowHeight={52}
+          />
+        </div>
+      </div>
+
+      {/* Since your search bar is at the bottom, the pagination info 
+          will naturally sit just above it in the AG-Grid footer */}
+      <style>{`
+        .ag-theme-quartz {
+          --ag-border-color: #000;
+          --ag-header-background-color: #fff;
+          --ag-odd-row-background-color: #fafafa;
+          --ag-font-size: 11px;
+          --ag-font-family: 'Inter', sans-serif;
+        }
+        .ag-paging-panel {
+          border-top: 2px solid black !important;
+          font-family: monospace !important;
+          text-transform: uppercase;
+          font-weight: bold;
+          font-size: 10px;
+        }
+      `}</style>
     </div>
   );
 }

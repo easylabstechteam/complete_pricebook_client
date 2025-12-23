@@ -1,10 +1,10 @@
-import type { SearchModalInput } from "@/types/search/searchModal.input";
+import type { SearchModalInput } from "@/types/search/SearchModalInput";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { useSearchModalLogic } from "@/services/search/search_results_modal";
+import { useSearchModalLogic } from "@/services/search/useSearchModalLogic";
 
 interface Props {
-  onSelect: () => void; // Prop to trigger the stage change in SearchPage
+  onSelect: () => void;
 }
 
 function SearchResultsModal({ onSelect }: Props) {
@@ -15,29 +15,31 @@ function SearchResultsModal({ onSelect }: Props) {
 
   if (results == null) return null;
 
-  // NO RESULTS STATE: Fits inside the expanded search bar
+  // NO RESULTS STATE
   if (results.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500 font-medium italic">
-        No Results Found
+      <div className="flex items-center justify-center p-12 text-black font-black uppercase tracking-tighter italic border-2 border-black border-t-0">
+        No Matches Found in Registry
       </div>
     );
   }
 
-  // Wrapper for selection to handle both data and UI transition
   const onSelectionInternal = (value: SearchModalInput) => {
-    handleSelect(value); // Your existing logic (API calls, etc)
-    onSelect();          // Trigger the "Snap to bottom" animation
+    handleSelect(value);
+    onSelect();
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-white" role="listbox">
-      {/* Sticky Header */}
-      <div className="text-[10px] uppercase tracking-widest font-bold text-gray-400 px-4 pt-3 pb-2 sticky top-0 bg-white z-10 border-b border-gray-50">
-        {isPending ? "Searching Database..." : `${results.length} Matches Found`}
+    <div className="w-full bg-white border-2 border-black border-t-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" role="listbox">
+      {/* Brutalist Sticky Header */}
+      <div className="text-[10px] uppercase tracking-[0.2em] font-black text-white bg-black px-4 py-2 sticky top-0 z-10 flex justify-between items-center">
+        <span>{isPending ? "SCANNING..." : "QUERY_MATCHES"}</span>
+        <span className="font-mono tabular-nums text-[9px] opacity-70">
+          {results.length} UNITS
+        </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="max-h-[400px] overflow-y-auto overflow-x-hidden">
         {results.map((value: SearchModalInput, key: number) => {
           const isHovered = key === hoveredId;
 
@@ -46,9 +48,9 @@ function SearchResultsModal({ onSelect }: Props) {
               key={key}
               tabIndex={0}
               className={`
-                flex items-center justify-between py-3 px-4 mb-1 rounded-xl 
-                cursor-pointer transition-all duration-150 ease-in-out outline-none
-                ${isHovered ? "bg-gray-900 text-white shadow-md" : "text-gray-800 hover:bg-gray-100"}
+                flex items-center justify-between py-4 px-4 border-b border-black last:border-b-0
+                cursor-pointer transition-none outline-none
+                ${isHovered ? "bg-black text-white" : "bg-white text-black"}
               `}
               onClick={() => onSelectionInternal(value)}
               onMouseEnter={() => setHoveredId(key)}
@@ -61,17 +63,25 @@ function SearchResultsModal({ onSelect }: Props) {
               }}
               role="option"
             >
-              <div className="flex items-center min-w-0">
-                <p className="text-sm font-semibold truncate">
-                  {value?.data.name}
-                  <span className={`ml-2 text-[10px] font-normal uppercase px-2 py-0.5 rounded-full border ${
-                    isHovered ? "border-gray-700 text-gray-400" : "border-gray-200 text-gray-500"
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-3">
+                   {/* Result Type Badge */}
+                   <span className={`text-[9px] font-black uppercase px-2 py-0.5 border-2 transition-colors ${
+                    isHovered ? "border-white text-white" : "border-black text-black"
                   }`}>
                     {value?.type}
                   </span>
-                </p>
+                  
+                  <p className="text-sm font-black uppercase tracking-tight truncate">
+                    {value?.data.name}
+                  </p>
+                </div>
               </div>
-              <ArrowRight size={14} className={isHovered ? "text-white" : "text-gray-300"} />
+              
+              <div className="flex items-center gap-2">
+                {isHovered && <span className="text-[9px] font-black uppercase tracking-widest animate-pulse">SELECT</span>}
+                <ArrowRight size={16} strokeWidth={3} className={isHovered ? "text-white" : "text-black"} />
+              </div>
             </div>
           );
         })}

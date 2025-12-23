@@ -1,4 +1,4 @@
-import { useGlobalState } from "@/store/search_store";
+import { useGlobalState } from "@/store/useGlobalState";
 
 function useSearchResultsLogic() {
   const tableResults = useGlobalState((state: any) => state.tableResults);

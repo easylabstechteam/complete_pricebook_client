@@ -2,7 +2,7 @@
 // TODO :: get response from the backend and store it in global state for other components to consume
 
 import { client } from "@/client/http_client/backend_api";
-import type { SearchInput } from "@/types/search/searchType.input";
+import type { SearchInput } from "@/types/search/SearchInput";
 
 async function PostSearch(userInput: SearchInput) {
 

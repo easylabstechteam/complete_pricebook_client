@@ -1,5 +1,5 @@
 import { client } from "@/client/http_client/backend_api";
-import type { SelectedSearchResultInput } from "@/types/search/selected.search.result.input";
+import type { SelectedSearchResultInput } from "@/types/search/SelectedSearchResultInput";
 
 async function PostSelectedSearchResult(
   userSelection: SelectedSearchResultInput

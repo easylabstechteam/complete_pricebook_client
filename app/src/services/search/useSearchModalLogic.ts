@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { useGlobalState } from "@/store/search_store";
-import { PostSelectedSearchResult } from "@/repositories/search/search.selected.result";
-import type { SearchModalInput } from "@/types/search/searchModal.input";
+import { useGlobalState } from "@/store/useGlobalState";
+import { PostSelectedSearchResult } from "@/repositories/search/PostSelectedSearchResult";
+import type { SearchModalInput } from "@/types/search/SearchModalInput";
 
 /**
  * Custom hook to handle the selection of a search result item,
