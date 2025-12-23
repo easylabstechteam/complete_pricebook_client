@@ -1,6 +1,8 @@
 import { useMemo, useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import useSearchResultsLogic from "@/services/search/useSearchResultsLogic";
+import { Badge } from "@/components/ui/badge";
+import { Check } from "lucide-react";
 
 // Styles
 import "ag-grid-community/styles/ag-grid.css";
@@ -9,17 +11,17 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 const DynamicPriceBadge = (params: any) => {
   const isCheapest = params.data?.is_cheapest_global;
   const value = parseFloat(params.value);
-  if (isNaN(value)) return <span>{params.value}</span>;
+  if (isNaN(value)) return <span className="text-slate-400">{params.value}</span>;
   
   return (
-    <div className="flex items-center gap-1 md:gap-2 h-full font-mono">
-      <span className={`text-[10px] md:text-[11px] font-bold ${isCheapest ? "text-black" : "text-slate-500"}`}>
-        ${value.toFixed(2)}
+    <div className="flex items-center gap-2 h-full">
+      <span className={isCheapest ? "font-bold text-slate-900" : "font-medium text-slate-600 font-mono"}>
+        ${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
       </span>
       {isCheapest && (
-        <div className="bg-black text-white border border-black px-1 md:px-1.5 py-0.5 text-[7px] md:text-[9px] font-black tracking-tighter uppercase leading-none">
-          Best
-        </div>
+        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 h-5 px-1.5 gap-0.5 text-[9px] font-bold uppercase tracking-wide">
+          <Check className="w-2.5 h-2.5" /> Best
+        </Badge>
       )}
     </div>
   );
@@ -47,13 +49,15 @@ function SearchResultsTable() {
       }))
     );
 
-    const minPrice = Math.min(...allProducts.map((p: any) => p.product_price || p.price || 0));
+    const prices = allProducts.map((p: any) => p.product_price || p.price || Infinity);
+    const minPrice = Math.min(...prices);
+    
     const formattedRows = allProducts.map((p:any )=> ({
       ...p,
-      is_cheapest_global: (p.product_price || p.price) === minPrice
+      is_cheapest_global: (p.product_price || p.price) === minPrice && minPrice !== Infinity
     }));
 
-    const keys = Object.keys(allProducts[0]);
+    const keys = Object.keys(allProducts[0] || {});
     return { rowData: formattedRows, dynamicKeys: keys };
   }, [tableResults]);
 
@@ -64,78 +68,79 @@ function SearchResultsTable() {
       const isCode = key.toLowerCase().includes("code");
       const isName = key.toLowerCase().includes("name");
 
-      // Mobile strategy: Only show name and price by default to avoid clutter
-      const isEssential = isPrice || isName || isTrade;
-
       return {
         field: key,
-        headerName: key.replace(/_/g, " ").toUpperCase(),
+        headerName: key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
         flex: isMobile ? undefined : (isTrade || isName ? 2 : 1),
-        width: isMobile ? 140 : undefined,
+        width: isMobile ? 150 : undefined,
         rowGroup: isTrade, 
-        hide: isTrade || (isMobile && !isEssential),
+        hide: isTrade || (isMobile && !(isPrice || isName)),
         cellRenderer: isPrice ? DynamicPriceBadge : null,
-        cellClass: isCode || isPrice 
-          ? "font-mono tabular-nums text-[10px]" 
-          : "font-bold text-black uppercase text-[10px] md:text-[11px]",
+        cellClass: `flex items-center text-sm ${
+          isCode || isPrice ? "font-mono tabular-nums text-slate-500" : "font-medium text-slate-900"
+        }`,
       };
     });
   }, [dynamicKeys, isMobile]);
 
   return (
-    <div className="w-full h-screen md:h-[90vh] flex flex-col bg-white border-t-2 border-black overflow-hidden">
-      {/* Header - Scaled for screens */}
-      <div className="px-4 py-3 md:px-6 md:py-4 border-b-2 border-black flex justify-between items-center md:items-end bg-white">
-        <div>
-          <h2 className="text-xl md:text-3xl font-black uppercase tracking-tighter text-black leading-none">Search Index</h2>
-          <p className="text-[8px] md:text-[10px] font-bold uppercase opacity-50 tracking-[0.1em] md:tracking-[0.2em] text-black">Market Extraction</p>
+    <div className="w-full h-screen md:h-[90vh] flex flex-col bg-white border-t border-slate-100 overflow-hidden">
+      
+      {/* Professional Header */}
+      <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-end bg-white">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">Search Index</h2>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Global Market Intelligence</p>
         </div>
-        <div className="text-right">
-          <span className="text-[8px] md:text-[10px] block font-black opacity-40 uppercase text-black">Total Records</span>
-          <span className="text-lg md:text-2xl font-black text-black tabular-nums">{rowData.length}</span>
+        <div className="bg-slate-50 px-4 py-1.5 rounded-lg border border-slate-100 text-right">
+          <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Entries Found</span>
+          <span className="text-xl font-bold text-slate-700 tabular-nums leading-none">{rowData.length}</span>
         </div>
       </div>
 
       <div className="flex-grow overflow-hidden relative">
-        <div className="ag-theme-quartz h-full w-full ag-theme-custom-bw">
+        <div className="ag-theme-quartz h-full w-full">
           <AgGridReact 
             rowData={rowData} 
             columnDefs={colDefs}
             groupDisplayType="groupRows"
             animateRows={true}
             pagination={true}
-            paginationPageSize={isMobile ? 10 : 20}
-            paginationPageSizeSelector={[10, 20, 50]}
-            suppressMovableColumns={isMobile} // Better for touch scrolling
+            paginationPageSize={20}
+            suppressMovableColumns={isMobile}
             defaultColDef={{
               sortable: true,
               filter: true,
               resizable: true,
-              headerClass: "bg-white text-black font-black text-[9px] md:text-[10px] tracking-widest border-b border-black"
+              headerClass: "text-slate-500 font-semibold text-[11px] uppercase tracking-wider"
             }}
-            headerHeight={isMobile ? 40 : 48}
-            rowHeight={isMobile ? 48 : 52}
+            headerHeight={48}
+            rowHeight={52}
           />
         </div>
       </div>
 
       <style>{`
         .ag-theme-quartz {
-          --ag-border-color: #000;
-          --ag-header-background-color: #fff;
-          --ag-odd-row-background-color: #fafafa;
-          --ag-font-size: ${isMobile ? '10px' : '11px'};
-          --ag-font-family: 'Inter', sans-serif;
+          --ag-border-color: #f1f5f9;
+          --ag-header-background-color: #f8fafc;
+          --ag-row-hover-color: #f8fafc;
+          --ag-selected-row-background-color: #eff6ff;
+          --ag-font-size: 13px;
+          --ag-font-family: inherit;
+        }
+        .ag-header {
+          border-bottom: 1px solid #e2e8f0 !important;
         }
         .ag-paging-panel {
-          border-top: 2px solid black !important;
-          font-family: monospace !important;
-          text-transform: uppercase;
-          font-weight: bold;
-          font-size: 9px;
-          height: ${isMobile ? '40px' : '45px'} !important;
+          border-top: 1px solid #e2e8f0 !important;
+          color: #64748b !important;
+          font-weight: 500;
+          font-size: 12px;
         }
-        .ag-cell-focus { border: none !important; outline: none !important; }
+        .ag-root-wrapper {
+          border: none !important;
+        }
       `}</style>
     </div>
   );

@@ -1,6 +1,7 @@
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchLogic } from "@/services/search/useSearchLogic";
+import { cn } from "@/lib/utils";
 
 interface SearchBarProps {
   stage: "idle" | "searching" | "results";
@@ -9,8 +10,7 @@ interface SearchBarProps {
 }
 
 function SearchBar({ stage, onTypingStop, onClear }: SearchBarProps) {
-  const { value, onChange, onKeyDown, handleSearch, isQueryEmpty } =
-    useSearchLogic();
+  const { value, onChange, onKeyDown, handleSearch, isQueryEmpty } = useSearchLogic();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -37,13 +37,22 @@ function SearchBar({ stage, onTypingStop, onClear }: SearchBarProps) {
   }, [value, stage]);
 
   return (
-    /* Removed large padding (p-4 -> p-2) on mobile to give the bar more "breathing room" across the screen width */
-    <div className="w-full max-w-4xl mx-auto p-2 sm:p-4">
-      {/* Increased padding-y (py-1) on the container to make the whole bar taller/thicker */}
-      <div className="relative flex items-center bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all focus-within:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] focus-within:-translate-y-0.5 py-1">
-        {/* Icon section stays consistent */}
+    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6">
+      <div 
+        className={cn(
+          "relative flex items-center bg-white rounded-xl border-2 transition-all duration-200 px-1 py-1",
+          // BORDER VISIBILITY: Solid gray-400 when not selected, pure black when selected
+          "border-gray-400 shadow-sm", 
+          "focus-within:border-black focus-within:shadow-md"
+        )}
+      >
+        {/* Icon section - High contrast Black */}
         <div className="pl-4 pr-1 text-black shrink-0">
-          <Search size={isMobile ? 22 : 24} strokeWidth={3} />
+          {stage === "searching" ? (
+            <Loader2 className="animate-spin" size={isMobile ? 20 : 22} />
+          ) : (
+            <Search size={isMobile ? 20 : 22} strokeWidth={2.5} />
+          )}
         </div>
 
         <input
@@ -52,39 +61,38 @@ function SearchBar({ stage, onTypingStop, onClear }: SearchBarProps) {
           onChange={onChange}
           onKeyDown={onKeyDown}
           placeholder={
-            isMobile ? "SEARCH..." : "ENTER TRADE_CODE, SUPPLIER OR PRODUCT..."
+            isMobile ? "Search..." : "Search trade code, supplier, or product..."
           }
-          /* Bumping py-5 on mobile makes the input field significantly taller.
-             Text size remains at sm/base to look "beefy" without clipping.
-          */
-          className="w-full py-5 sm:py-6 px-3 text-black bg-transparent focus:outline-none placeholder:text-gray-400 font-mono text-sm sm:text-lg uppercase font-bold tracking-tight"
+          className="w-full py-4 sm:py-5 px-3 text-black bg-transparent focus:outline-none placeholder:text-gray-400 font-medium text-sm sm:text-base"
         />
 
-        {/* Action Button: Wider hit area for mobile fingers */}
-        <div className="pr-3 shrink-0">
+        {/* Action Button - Strict Monochrome */}
+        <div className="pr-1 shrink-0">
           <button
             onClick={() => {
               handleSearch();
               onTypingStop();
             }}
             disabled={isQueryEmpty}
-            className={`
-              px-5 sm:px-8 py-3 sm:py-3.5 border-2 border-black font-black uppercase text-xs sm:text-sm tracking-widest transition-all
-              ${
-                isQueryEmpty
-                  ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
-                  : "bg-black text-white hover:bg-white hover:text-black active:translate-y-1 active:shadow-none"
-              }
-            `}
+            className={cn(
+              "px-5 sm:px-7 py-2.5 sm:py-3 rounded-lg font-bold text-xs sm:text-sm transition-all duration-200",
+              isQueryEmpty
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                : "bg-black text-white hover:bg-zinc-800 active:scale-95 shadow-sm"
+            )}
           >
-            {isMobile ? "GO" : "Search"}
+            {isMobile ? "GO" : "SEARCH"}
           </button>
         </div>
 
-        {/* Status Indicator */}
-        <div className="absolute -top-3 left-4 bg-black text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-tighter">
-          user input
-        </div>
+        {/* Dynamic Status Label */}
+        {value.length > 0 && (
+          <div className="absolute -bottom-7 left-4">
+             <span className="text-[9px] font-bold text-black uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
+               Registry Scan Active
+             </span>
+          </div>
+        )}
       </div>
     </div>
   );

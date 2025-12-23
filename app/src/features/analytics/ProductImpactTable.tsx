@@ -3,19 +3,25 @@ import { AgGridReact } from "ag-grid-react";
 import type { ColDef } from "ag-grid-community";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAnalyticsLogic } from "@/services/analytics/useAnalyticsLogic";
+import { Badge } from "@/components/ui/badge"; // Assuming Shadcn UI
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 
 const DynamicImpactBadge = (params: any) => {
   const val = parseFloat(params.value);
-  if (isNaN(val)) return <span>{params.value}</span>;
+  if (isNaN(val)) return <span className="text-muted-foreground">{params.value}</span>;
+  
   const isMvp = val === 0;
+  
   return (
-    <div className="flex items-center gap-1 h-full font-mono">
-      <div className={`px-1.5 py-0.5 border text-[9px] sm:text-[10px] font-bold tracking-tighter ${isMvp ? "bg-black text-white border-black" : "bg-white text-black border-black"}`}>
-        {isMvp ? "🏆" : `+${val.toFixed(1)}%`}
-      </div>
+    <div className="flex items-center h-full">
+      <Badge 
+        variant={isMvp ? "default" : "secondary"} 
+        className={`text-[10px] px-2 py-0 font-medium ${isMvp ? "bg-primary" : "bg-slate-100 text-slate-700 border-none"}`}
+      >
+        {isMvp ? "Optimal" : `+${val.toFixed(1)}%`}
+      </Badge>
     </div>
   );
 };
@@ -43,36 +49,42 @@ function DynamicProductImpactTable() {
 
       return {
         field: key,
-        headerName: key.replace(/_/g, " ").toUpperCase(),
+        headerName: key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
         flex: isMobile ? undefined : (isTrade ? 2 : 1),
-        width: isMobile ? 125 : undefined,
+        width: isMobile ? 140 : undefined,
         rowGroup: isTrade,
         hide: isTrade || (isMobile && isSecondary), 
-        cellClass: `group ${isPrice || isVariance ? "font-mono tabular-nums text-[10px] sm:text-[11px]" : "font-medium uppercase text-[10px] sm:text-[11px]"}`,
-        valueFormatter: isPrice ? (p: any) => `$${parseFloat(p.value).toFixed(2)}` : undefined,
+        cellClass: `flex items-center text-sm ${isPrice || isVariance ? "font-mono tabular-nums text-slate-600" : "text-slate-900"}`,
+        valueFormatter: isPrice ? (p: any) => `$${parseFloat(p.value).toLocaleString(undefined, {minimumFractionDigits: 2})}` : undefined,
         cellRenderer: isVariance ? DynamicImpactBadge : undefined,
       };
     });
   }, [productImpact, isMobile]);
 
   return (
-    <Card id='product_impact_table' className="h-screen md:h-[90vh] w-full flex flex-col border-none shadow-none rounded-none bg-white overflow-hidden">
+    <Card id='product_impact_table' className="h-screen md:h-[90vh] w-full flex flex-col border-none shadow-sm rounded-lg bg-card overflow-hidden">
       
-      <CardHeader className="px-4 py-3 md:px-6 md:py-4 border-b-2 border-black rounded-none bg-white z-10">
-        <div className="flex justify-between items-center text-black">
-          <div>
-            <CardTitle className="text-xl md:text-3xl font-black uppercase tracking-tighter italic leading-none">Performance Audit</CardTitle>
-            <CardDescription className="text-black font-bold text-[8px] md:text-[10px] uppercase tracking-[0.1em] md:tracking-[0.2em] opacity-50">Automated Benchmarking</CardDescription>
+      <CardHeader className="px-6 py-5 border-b border-slate-100 bg-white">
+        <div className="flex justify-between items-end">
+          <div className="space-y-1">
+            <CardTitle className="text-xl font-semibold tracking-tight text-slate-900">
+              Product Impact Analysis
+            </CardTitle>
+            <CardDescription className="text-slate-500 text-xs font-medium uppercase tracking-wider">
+              Real-time Performance Metrics
+            </CardDescription>
           </div>
-          <div className="text-right">
-            <span className="text-[8px] font-bold block uppercase opacity-40">Records</span>
-            <span className="text-lg md:text-xl font-black tabular-nums">{productImpact?.length || 0}</span>
+          <div className="bg-slate-50 px-3 py-1 rounded-md border border-slate-100">
+            <span className="text-[10px] font-semibold text-slate-400 block uppercase">Total Entries</span>
+            <span className="text-lg font-bold text-slate-700 tabular-nums leading-none">
+              {productImpact?.length || 0}
+            </span>
           </div>
         </div>
       </CardHeader>
 
-      <div className="flex-grow p-0 relative overflow-hidden"> 
-        <div className="ag-theme-quartz h-full w-full brutalist-grid">
+      <div className="flex-grow p-0 relative overflow-hidden bg-white"> 
+        <div className="ag-theme-quartz h-full w-full">
           <AgGridReact 
             rowData={productImpact} 
             columnDefs={colDefs}
@@ -83,18 +95,26 @@ function DynamicProductImpactTable() {
               sortable: true, 
               filter: true, 
               resizable: true,
-              headerClass: "bg-white text-black font-black text-[9px] tracking-widest border-b border-black"
+              headerClass: "text-slate-500 font-semibold text-[11px] uppercase tracking-wider"
             }}
-            headerHeight={isMobile ? 35 : 45}
-            rowHeight={isMobile ? 48 : 52}
+            headerHeight={48}
+            rowHeight={isMobile ? 52 : 48}
           />
         </div>
       </div>
 
       <style>{`
-        .brutalist-grid .ag-row-hover { background-color: #000 !important; color: #fff !important; } 
-        .brutalist-grid .ag-row-hover .ag-cell { color: #fff !important; }
-        .ag-header-cell-label { justify-content: center; }
+        /* Professional UI Refinements */
+        .ag-theme-quartz {
+          --ag-border-color: #f1f5f9;
+          --ag-header-background-color: #f8fafc;
+          --ag-row-hover-color: #f1f5f9;
+          --ag-selected-row-background-color: #eff6ff;
+          --ag-font-size: 13px;
+          --ag-font-family: inherit;
+        }
+        .ag-header-cell-label { justify-content: flex-start; }
+        .ag-root-wrapper { border: none !important; }
       `}</style>
     </Card>
   );

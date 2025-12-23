@@ -1,7 +1,9 @@
 import type { SearchModalInput } from "@/types/search/SearchModalInput";
 import { useState, useEffect } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Search, Loader2 } from "lucide-react";
 import { useSearchModalLogic } from "@/services/search/useSearchModalLogic";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   onSelect: () => void;
@@ -25,8 +27,10 @@ function SearchResultsModal({ onSelect }: Props) {
 
   if (results.length === 0) {
     return (
-      <div className="flex items-center justify-center p-8 md:p-12 text-black font-black uppercase tracking-tighter italic border-2 border-black border-t-0 bg-white">
-        No Matches Found in Registry
+      <div className="flex flex-col items-center justify-center p-12 bg-white border border-slate-200 rounded-xl shadow-xl mt-2 animate-in fade-in zoom-in-95 duration-200">
+        <Search className="w-8 h-8 text-slate-300 mb-3" />
+        <p className="text-sm font-medium text-slate-900">No results found</p>
+        <p className="text-xs text-slate-400 mt-1">Try adjusting your search terms</p>
       </div>
     );
   }
@@ -37,61 +41,76 @@ function SearchResultsModal({ onSelect }: Props) {
   };
 
   return (
-    <div className="w-full bg-white border-2 border-black border-t-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col" role="listbox">
-      {/* Brutalist Sticky Header */}
-      <div className="text-[10px] uppercase tracking-[0.2em] font-black text-white bg-black px-4 py-2 sticky top-0 z-20 flex justify-between items-center">
-        <span>{isPending ? "SCANNING..." : "QUERY_MATCHES"}</span>
-        <span className="font-mono tabular-nums text-[9px] opacity-70">
-          {results.length} UNITS
+    <div className="w-full bg-white border border-slate-200 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col mt-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300" role="listbox">
+      {/* Refined Professional Header */}
+      <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+          {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+          {isPending ? "Updating Results" : "Top Matches"}
+        </span>
+        <span className="text-[10px] font-medium text-slate-400">
+          {results.length} results found
         </span>
       </div>
 
-      {/* Responsive Height: Smaller on mobile to leave room for the keyboard/search bar */}
-      <div className="max-h-[300px] md:max-h-[400px] overflow-y-auto overflow-x-hidden touch-pan-y">
+      {/* Results List */}
+      <div className="max-h-[300px] md:max-h-[420px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-200">
         {results.map((value: SearchModalInput, key: number) => {
-          // On mobile, we avoid hover styles as they "stick" after a tap
-          const isActive = key === hoveredId;
+          const isHovered = key === hoveredId;
 
           return (
             <div
               key={key}
               tabIndex={0}
-              className={`
-                flex items-center justify-between py-3 md:py-4 px-4 border-b border-black last:border-b-0
-                cursor-pointer transition-none outline-none select-none
-                ${isActive ? "bg-black text-white" : "bg-white text-black"}
-                ${!isMobile ? "hover:bg-black hover:text-white" : "active:bg-black active:text-white"}
-              `}
+              className={cn(
+                "flex items-center justify-between py-3 px-4 cursor-pointer outline-none transition-all duration-150",
+                isHovered ? "bg-slate-50" : "bg-white",
+                "border-b border-slate-50 last:border-b-0"
+              )}
               onClick={() => onSelectionInternal(value)}
               onMouseEnter={() => !isMobile && setHoveredId(key)}
               onMouseLeave={() => !isMobile && setHoveredId(null)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelectionInternal(value);
-                }
+                if (e.key === "Enter") onSelectionInternal(value);
               }}
               role="option"
             >
-              <div className="flex flex-col min-w-0 pr-2">
-                <div className="flex items-center gap-2 md:gap-3">
-                   {/* Result Type Badge - Scaled for Mobile */}
-                   <span className={`text-[8px] md:text-[9px] font-black uppercase px-1.5 md:px-2 py-0.5 border-2 transition-colors shrink-0 ${
-                    isActive ? "border-white text-white" : "border-black text-black"
-                  }`}>
-                    {value?.type}
-                  </span>
-                  
-                  <p className="text-xs md:text-sm font-black uppercase tracking-tight truncate">
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Semantic Type Badge */}
+                <Badge 
+                  variant="secondary" 
+                  className={cn(
+                    "text-[9px] px-1.5 py-0 rounded font-bold uppercase tracking-wide shrink-0",
+                    value?.type === 'product' ? "bg-blue-50 text-blue-600" : "bg-emerald-50 text-emerald-600"
+                  )}
+                >
+                  {value?.type}
+                </Badge>
+                
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-semibold text-slate-900 truncate">
                     {value?.data.name}
-                  </p>
+                  </span>
+                  {/* Added a metadata line for a more professional feel */}
+                  <span className="text-[10px] text-slate-400 truncate">
+                    ID: {value?.data.trade_code || 'N/A'} • Registry Entry
+                  </span>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 shrink-0">
-                {/* Text hidden on small mobile to prevent overlap */}
-                {isActive && !isMobile && <span className="text-[9px] font-black uppercase tracking-widest animate-pulse">SELECT</span>}
-                <ArrowRight size={isMobile ? 14 : 16} strokeWidth={3} className={isActive ? "text-white" : "text-black"} />
+              <div className="flex items-center gap-3 shrink-0 ml-4">
+                {isHovered && !isMobile && (
+                  <span className="text-[10px] font-semibold text-blue-600 animate-in fade-in slide-in-from-right-1">
+                    Select
+                  </span>
+                )}
+                <ArrowRight 
+                  size={16} 
+                  className={cn(
+                    "transition-transform duration-200",
+                    isHovered ? "translate-x-1 text-blue-600" : "text-slate-300"
+                  )} 
+                />
               </div>
             </div>
           );
