@@ -1,15 +1,8 @@
-import React, { useMemo, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-// 1. Import the ColDef type
 import type { ColDef } from "ag-grid-community"; 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAnalyticsLogic } from "@/services/analytics/useAnalyticsLogic";
-
 import { MoreVertical, Info, PackageSearch } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,7 +15,6 @@ import {
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 
-// Renderer remains the same
 const RankingVarianceBadge = (params: any) => {
   const val = parseFloat(params.value);
   const isMvp = val === 0;
@@ -35,7 +27,6 @@ const RankingVarianceBadge = (params: any) => {
   );
 };
 
-// Actions remains the same
 const RowActions = (params: any) => {
   const { onFetchImpact } = params.context;
   const rowData = params.data;
@@ -54,7 +45,7 @@ const RowActions = (params: any) => {
               onFetchImpact.mutate({ Filter: rowData.trade_code });
               document.getElementById("product_impact_table")?.scrollIntoView({ behavior: 'smooth' });
           }}>
-            <PackageSearch className="mr-2 h-4 w-4" /> High performing products prices
+            <PackageSearch className="mr-2 h-4 w-4" /> High performing products
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -71,16 +62,13 @@ function SupplierRankingTable() {
 
   const gridContext = useMemo(() => ({ onFetchImpact: getProductImpact }), [getProductImpact]);
 
-  // 2. Explicitly type the useMemo return as ColDef[]
   const colDefs = useMemo<ColDef[]>(() => {
     if (!supplierRankings || supplierRankings.length === 0) return [];
-
     const baseCols: ColDef[] = Object.keys(supplierRankings[0]).map((key) => {
       const isName = key.toLowerCase().includes("name");
       const isPrice = key.toLowerCase().includes("price") || key.toLowerCase().includes("avg");
       const isVariance = key.toLowerCase().includes("away") || key.toLowerCase().includes("percentage");
 
-      // 3. Construct the object and use undefined instead of null
       return {
         field: key,
         headerName: key.replace(/_/g, " ").toUpperCase(),
@@ -91,33 +79,26 @@ function SupplierRankingTable() {
       };
     });
 
-    return [
-      ...baseCols,
-      {
-        headerName: "ACTIONS",
-        field: "actions",
-        width: 100,
-        pinned: "right",
-        resizable: false,
-        sortable: false,
-        filter: false,
-        cellRenderer: RowActions,
-        cellClass: "group border-l border-black flex items-center justify-center",
-      },
-    ];
+    return [...baseCols, {
+      headerName: "ACTIONS",
+      field: "actions",
+      width: 100,
+      pinned: "right",
+      resizable: false,
+      sortable: false,
+      filter: false,
+      cellRenderer: RowActions,
+      cellClass: "group border-l border-black flex items-center justify-center",
+    }];
   }, [supplierRankings]);
 
   return (
     <Card className="h-[85vh] w-full flex flex-col border-none shadow-none rounded-none bg-white">
       <CardHeader className="px-6 py-6 border-b-2 border-black rounded-none bg-white">
         <div className="flex justify-between items-end">
-          <div className="space-y-1">
-            <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">
-              Supplier Trade Performance
-            </CardTitle>
-            <CardDescription className="text-black font-medium text-xs uppercase tracking-widest opacity-60">
-              Rankings based on Trade Code Benchmarks
-            </CardDescription>
+          <div className="space-y-1 text-black">
+            <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">Supplier Trade Performance</CardTitle>
+            <CardDescription className="text-black font-medium text-xs uppercase tracking-widest opacity-60">Rankings based on Trade Code Benchmarks</CardDescription>
           </div>
           <div className="text-right text-black">
             <span className="text-[10px] font-bold block uppercase tracking-widest opacity-40">Records Found</span>
@@ -125,7 +106,6 @@ function SupplierRankingTable() {
           </div>
         </div>
       </CardHeader>
-
       <div className="flex-grow p-0 relative">
         <div className="ag-theme-quartz h-full w-full brutalist-grid">
           <AgGridReact
@@ -133,12 +113,9 @@ function SupplierRankingTable() {
             columnDefs={colDefs}
             context={gridContext}
             loading={isLoading}
-            rowHoverable={true}
             suppressRowClickSelection={true}
             defaultColDef={{
-              resizable: true,
-              sortable: true,
-              filter: true,
+              resizable: true, sortable: true, filter: true,
               headerClass: "bg-white text-black font-black text-[10px] tracking-widest border-b border-black",
             }}
             headerHeight={45}
@@ -146,11 +123,7 @@ function SupplierRankingTable() {
           />
         </div>
       </div>
-
-      <style>{`
-        .brutalist-grid .ag-row-hover { background-color: #000 !important; color: #fff !important; }
-        .brutalist-grid .ag-row-hover .ag-cell { color: #fff !important; }
-      `}</style>
+      <style>{`.brutalist-grid .ag-row-hover { background-color: #000 !important; color: #fff !important; } .brutalist-grid .ag-row-hover .ag-cell { color: #fff !important; }`}</style>
     </Card>
   );
 }
