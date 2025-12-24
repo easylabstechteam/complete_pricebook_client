@@ -75,6 +75,6 @@ function SearchPage() {
       </div>
     </AppShell>
   );
-}
+};
 
 export default SearchPage;
