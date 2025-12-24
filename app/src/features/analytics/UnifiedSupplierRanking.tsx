@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ColDef } from "ag-grid-community"; // Added for explicit typing
+import type { ColDef } from "ag-grid-community"; // Added for explicit typing
 import {
   Card,
   CardHeader,
