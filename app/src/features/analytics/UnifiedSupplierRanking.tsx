@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
+import { ColDef } from "ag-grid-community"; // Added for explicit typing
 import {
   Card,
   CardHeader,
@@ -23,7 +24,6 @@ const ProductDetailRow = (p: any) => {
   const { getProductImpact, productImpact } = useAnalyticsLogic();
 
   useEffect(() => {
-    // Trigger the mutation using the specific IDs required by your backend
     if (masterData.trade_id && masterData.supplier_id) {
       getProductImpact.mutate({
         trade_id: masterData.trade_id,
@@ -32,7 +32,8 @@ const ProductDetailRow = (p: any) => {
     }
   }, [masterData.trade_id, masterData.supplier_id]);
 
-  const detailColDefs = useMemo(
+  // Explicitly typing ColDef avoids TS2769
+  const detailColDefs = useMemo<ColDef[]>(
     () => [
       {
         field: "product_name",
@@ -123,7 +124,6 @@ function UnifiedSupplierRanking() {
   const { supplierRankings, isLoading, getSupplierRankings } = useAnalyticsLogic();
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
-  // Trigger initial load on component mount
   useEffect(() => {
     getSupplierRankings.mutate();
   }, []);
@@ -133,7 +133,6 @@ function UnifiedSupplierRanking() {
     supplierRankings?.forEach((row: any) => {
       data.push(row);
       if (expandedRowId === row.trade_code) {
-        // We ensure a unique ID for the virtual detail row to avoid duplicate node ID errors
         data.push({
           isDetail: true,
           masterData: row,
@@ -144,7 +143,8 @@ function UnifiedSupplierRanking() {
     return data;
   }, [supplierRankings, expandedRowId]);
 
-  const colDefs = useMemo(
+  // FIX: Added <ColDef[]> type to resolve 'pinned' property mismatch
+  const colDefs = useMemo<ColDef[]>(
     () => [
       {
         field: "trade_name",
@@ -184,22 +184,28 @@ function UnifiedSupplierRanking() {
       {
         headerName: "Action",
         width: 170,
-        pinned: "right",
-        cellRenderer: (params: any) => (
-          <Button
-            variant={expandedRowId === params.data.trade_code ? "default" : "outline"}
-            size="sm"
-            className="h-8 w-full gap-2 text-[11px]"
-            onClick={() => setExpandedRowId(expandedRowId === params.data.trade_code ? null : params.data.trade_code)}
-          >
-            {expandedRowId === params.data.trade_code ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <PackageSearch className="w-4 h-4" />
-            )}
-            {expandedRowId === params.data.trade_code ? "Close" : `View ${params.data.items_in_trade} Items`}
-          </Button>
-        ),
+        pinned: "right", // This is now correctly typed as "right" | "left"
+        cellRenderer: (params: any) => {
+          // Guard for detail rows which don't have trade_code
+          if (params.data.isDetail) return null;
+          
+          const isExpanded = expandedRowId === params.data.trade_code;
+          return (
+            <Button
+              variant={isExpanded ? "default" : "outline"}
+              size="sm"
+              className="h-8 w-full gap-2 text-[11px]"
+              onClick={() => setExpandedRowId(isExpanded ? null : params.data.trade_code)}
+            >
+              {isExpanded ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <PackageSearch className="w-4 h-4" />
+              )}
+              {isExpanded ? "Close" : `View ${params.data.items_in_trade} Items`}
+            </Button>
+          );
+        },
       },
     ],
     [expandedRowId]
@@ -220,7 +226,6 @@ function UnifiedSupplierRanking() {
         <AgGridReact
           rowData={rowDataWithDetails}
           columnDefs={colDefs}
-          // Use our custom id for detail rows, otherwise fallback to trade_code
           getRowId={(p: any) => p.data.id || p.data.trade_code}
           theme="legacy"
           pagination={true}
@@ -233,7 +238,6 @@ function UnifiedSupplierRanking() {
           loading={isLoading}
         />
       </div>
-      {/* Search bar preference: Sits at bottom below this component */}
     </Card>
   );
 }
