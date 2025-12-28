@@ -1,5 +1,5 @@
 import processExcelFile from "@/services/upload/processExcelFile";
-import { Upload, FileText, Loader2 } from "lucide-react";
+import { Upload,Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useGlobalErrorState } from "@/store/useErrorState";
 
