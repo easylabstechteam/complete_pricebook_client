@@ -1,17 +1,20 @@
 import { useState } from "react";
 import SearchBar from "@/features/search/search_bar";
-import SearchResultsTable from "@/features/search/search_results_table";
+import SearchResultsTable from "@/features/search/view_search_results";
 import AppShell from "@/pages/layouts/app_shell";
-import SearchResultsModal from "@/features/search/search_results_modal";
+import SearchResultsModal from "@/features/search/view_predictated_search_results";
 import { cn } from "@/lib/utils";
 
 function SearchPage() {
+
   const [stage, setStage] = useState<"idle" | "searching" | "results">("idle");
+  // ** components consume the data and handle the ui issues from there.
+
+
 
   return (
     <AppShell>
       <div className="relative h-full w-full flex flex-col overflow-hidden bg-white">
-        
         {/* 1. TOP AREA: Title Block - Refined Typography */}
         <div
           className={cn(
@@ -60,6 +63,8 @@ function SearchPage() {
           >
             <SearchBar
               stage={stage}
+       
+        
               onTypingStop={() => setStage("searching")}
               onClear={() => setStage("idle")}
             />
@@ -75,6 +80,6 @@ function SearchPage() {
       </div>
     </AppShell>
   );
-};
+}
 
 export default SearchPage;
