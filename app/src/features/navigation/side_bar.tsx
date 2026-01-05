@@ -14,7 +14,7 @@ function Sidebar() {
     { name: 'Uploads', href: '/upload', icon: Upload },
   ];
 
-  const isLinkTextVisible = isDesktopExpanded || isMobileOpen;
+  const isLinkTextVisible = isDesktopExpanded || isMobileOpen
   
   return (
     <>
