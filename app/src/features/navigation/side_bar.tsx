@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 
 function Sidebar() {
-  const [isDesktopExpanded, setIsDesktopExpanded] = useState(true); 
+  const [isDesktopExpanded, setIsDesktopExpanded] = useState(false); 
   const [isMobileOpen, setIsMobileOpen] = useState(false); 
   const location = useLocation();
 
